@@ -1,0 +1,18 @@
+name: "user"
+port: "9805"
+db:
+  host: "127.0.0.1"
+  port: 3306
+  user: "root"
+  password: "root"
+  database: "qvbilam_contact"
+redis:
+  host: "127.0.0.1"
+  port: 6379
+  user: ""
+  password: ""
+  database: 0
+user-server:
+  host: "127.0.0.1"
+  port: 9801
+  name: "grpc-user-server"
