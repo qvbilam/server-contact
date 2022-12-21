@@ -1,6 +1,8 @@
 package main
 
 import (
+	"contact/api"
+	proto "contact/api/qvbilam/contact/v1"
 	"contact/global"
 	"contact/initialize"
 	"fmt"
@@ -20,8 +22,8 @@ func main() {
 
 	// 注册服务
 	server := grpc.NewServer()
-	//proto.RegisterMessageServer(server, &api.MessageServer{})
-	//proto.RegisterMessageServer(server, nil)
+	proto.RegisterFriendServer(server, &api.FriendServer{})
+	proto.RegisterGroupServer(server, &api.GroupServer{})
 
 	Host := "0.0.0.0"
 	Port := global.ServerConfig.Port

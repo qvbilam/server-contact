@@ -1,6 +1,12 @@
 package model
 
-import "time"
+import (
+	"contact/enum"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"gorm.io/gorm"
+	"time"
+)
 
 type Group struct {
 	IDModel
@@ -16,4 +22,26 @@ type Group struct {
 	BannedEndAt      *time.Time
 	DateModel
 	DeletedModel
+}
+
+func (g Group) AfterCreate(tx *gorm.DB) error {
+	// 创建群主
+	if res := tx.Create(&GroupMember{
+		GroupID:   g.ID,
+		UserModel: UserModel{UserID: g.UserID},
+		Role:      enum.GroupRoleOwner,
+	}); res.RowsAffected == 0 || res.Error != nil {
+		return status.Errorf(codes.Internal, "create group owner error: %s", res.Error)
+	}
+
+	return nil
+}
+
+func (g Group) AfterDelete(tx *gorm.DB) error {
+	// 删除所有群
+	res := tx.Delete(&GroupMember{GroupID: g.ID})
+	if res.RowsAffected == 0 || res.Error != nil {
+		return status.Errorf(codes.Internal, "delete group members error: %s", res.Error)
+	}
+	return nil
 }

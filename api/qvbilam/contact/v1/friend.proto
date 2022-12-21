@@ -15,7 +15,7 @@ message FriendsResponse {
   repeated FriendResponse friends = 2;
 }
 
-message UpdateFriendResponse {
+message UpdateFriendRequest {
   int64 id = 1;
   int64 userId = 2;
   int64 friendUserId = 3;
@@ -26,8 +26,8 @@ message SearchFriendRequest{
 }
 
 service friend {
-  rpc Create(UpdateFriendResponse) returns (google.protobuf.Empty);
-  rpc Update(UpdateFriendResponse) returns (google.protobuf.Empty);
-  rpc Delete(UpdateFriendResponse) returns (google.protobuf.Empty);
+  rpc Create(UpdateFriendRequest) returns (google.protobuf.Empty);
+  rpc Update(UpdateFriendRequest) returns (google.protobuf.Empty);
+  rpc Delete(UpdateFriendRequest) returns (google.protobuf.Empty);
   rpc Get(SearchFriendRequest) returns (FriendsResponse);
 }

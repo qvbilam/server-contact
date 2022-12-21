@@ -23,9 +23,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FriendClient interface {
-	Create(ctx context.Context, in *UpdateFriendResponse, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	Update(ctx context.Context, in *UpdateFriendResponse, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	Delete(ctx context.Context, in *UpdateFriendResponse, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	Create(ctx context.Context, in *UpdateFriendRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	Update(ctx context.Context, in *UpdateFriendRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	Delete(ctx context.Context, in *UpdateFriendRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	Get(ctx context.Context, in *SearchFriendRequest, opts ...grpc.CallOption) (*FriendsResponse, error)
 }
 
@@ -37,7 +37,7 @@ func NewFriendClient(cc grpc.ClientConnInterface) FriendClient {
 	return &friendClient{cc}
 }
 
-func (c *friendClient) Create(ctx context.Context, in *UpdateFriendResponse, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *friendClient) Create(ctx context.Context, in *UpdateFriendRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/contactPb.v1.friend/Create", in, out, opts...)
 	if err != nil {
@@ -46,7 +46,7 @@ func (c *friendClient) Create(ctx context.Context, in *UpdateFriendResponse, opt
 	return out, nil
 }
 
-func (c *friendClient) Update(ctx context.Context, in *UpdateFriendResponse, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *friendClient) Update(ctx context.Context, in *UpdateFriendRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/contactPb.v1.friend/Update", in, out, opts...)
 	if err != nil {
@@ -55,7 +55,7 @@ func (c *friendClient) Update(ctx context.Context, in *UpdateFriendResponse, opt
 	return out, nil
 }
 
-func (c *friendClient) Delete(ctx context.Context, in *UpdateFriendResponse, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *friendClient) Delete(ctx context.Context, in *UpdateFriendRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/contactPb.v1.friend/Delete", in, out, opts...)
 	if err != nil {
@@ -77,9 +77,9 @@ func (c *friendClient) Get(ctx context.Context, in *SearchFriendRequest, opts ..
 // All implementations must embed UnimplementedFriendServer
 // for forward compatibility
 type FriendServer interface {
-	Create(context.Context, *UpdateFriendResponse) (*emptypb.Empty, error)
-	Update(context.Context, *UpdateFriendResponse) (*emptypb.Empty, error)
-	Delete(context.Context, *UpdateFriendResponse) (*emptypb.Empty, error)
+	Create(context.Context, *UpdateFriendRequest) (*emptypb.Empty, error)
+	Update(context.Context, *UpdateFriendRequest) (*emptypb.Empty, error)
+	Delete(context.Context, *UpdateFriendRequest) (*emptypb.Empty, error)
 	Get(context.Context, *SearchFriendRequest) (*FriendsResponse, error)
 	mustEmbedUnimplementedFriendServer()
 }
@@ -88,13 +88,13 @@ type FriendServer interface {
 type UnimplementedFriendServer struct {
 }
 
-func (UnimplementedFriendServer) Create(context.Context, *UpdateFriendResponse) (*emptypb.Empty, error) {
+func (UnimplementedFriendServer) Create(context.Context, *UpdateFriendRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
 }
-func (UnimplementedFriendServer) Update(context.Context, *UpdateFriendResponse) (*emptypb.Empty, error) {
+func (UnimplementedFriendServer) Update(context.Context, *UpdateFriendRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
 }
-func (UnimplementedFriendServer) Delete(context.Context, *UpdateFriendResponse) (*emptypb.Empty, error) {
+func (UnimplementedFriendServer) Delete(context.Context, *UpdateFriendRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
 func (UnimplementedFriendServer) Get(context.Context, *SearchFriendRequest) (*FriendsResponse, error) {
@@ -114,7 +114,7 @@ func RegisterFriendServer(s grpc.ServiceRegistrar, srv FriendServer) {
 }
 
 func _Friend_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateFriendResponse)
+	in := new(UpdateFriendRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -126,13 +126,13 @@ func _Friend_Create_Handler(srv interface{}, ctx context.Context, dec func(inter
 		FullMethod: "/contactPb.v1.friend/Create",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FriendServer).Create(ctx, req.(*UpdateFriendResponse))
+		return srv.(FriendServer).Create(ctx, req.(*UpdateFriendRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Friend_Update_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateFriendResponse)
+	in := new(UpdateFriendRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -144,13 +144,13 @@ func _Friend_Update_Handler(srv interface{}, ctx context.Context, dec func(inter
 		FullMethod: "/contactPb.v1.friend/Update",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FriendServer).Update(ctx, req.(*UpdateFriendResponse))
+		return srv.(FriendServer).Update(ctx, req.(*UpdateFriendRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Friend_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateFriendResponse)
+	in := new(UpdateFriendRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -162,7 +162,7 @@ func _Friend_Delete_Handler(srv interface{}, ctx context.Context, dec func(inter
 		FullMethod: "/contactPb.v1.friend/Delete",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FriendServer).Delete(ctx, req.(*UpdateFriendResponse))
+		return srv.(FriendServer).Delete(ctx, req.(*UpdateFriendRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

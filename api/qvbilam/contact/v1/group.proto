@@ -86,7 +86,8 @@ service Group {
   rpc Update(UpdateGroupRequest) returns (google.protobuf.Empty);
   rpc Delete(UpdateGroupRequest) returns (google.protobuf.Empty);
   rpc Get(SearchGroupRequest) returns (GroupsResponse);
-  rpc GetMember(SearchGroupMemberRequest) returns (GroupMembersResponse);
+
+  rpc Member(SearchGroupMemberRequest) returns (GroupMembersResponse);
   rpc Join(UpdateGroupMemberRequest) returns (google.protobuf.Empty);
   rpc Quit(UpdateGroupMemberRequest) returns (google.protobuf.Empty);
   rpc KickOut(UpdateGroupMemberRequest) returns (google.protobuf.Empty);
