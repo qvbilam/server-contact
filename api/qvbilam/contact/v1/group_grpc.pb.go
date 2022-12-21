@@ -31,7 +31,7 @@ type GroupClient interface {
 	Join(ctx context.Context, in *UpdateGroupMemberRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	Quit(ctx context.Context, in *UpdateGroupMemberRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	KickOut(ctx context.Context, in *UpdateGroupMemberRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	Mine(ctx context.Context, in *SearchGroupRequest, opts ...grpc.CallOption) (*GroupMembersResponse, error)
+	Mine(ctx context.Context, in *SearchGroupRequest, opts ...grpc.CallOption) (*GroupsResponse, error)
 }
 
 type groupClient struct {
@@ -114,8 +114,8 @@ func (c *groupClient) KickOut(ctx context.Context, in *UpdateGroupMemberRequest,
 	return out, nil
 }
 
-func (c *groupClient) Mine(ctx context.Context, in *SearchGroupRequest, opts ...grpc.CallOption) (*GroupMembersResponse, error) {
-	out := new(GroupMembersResponse)
+func (c *groupClient) Mine(ctx context.Context, in *SearchGroupRequest, opts ...grpc.CallOption) (*GroupsResponse, error) {
+	out := new(GroupsResponse)
 	err := c.cc.Invoke(ctx, "/contactPb.v1.Group/Mine", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -135,7 +135,7 @@ type GroupServer interface {
 	Join(context.Context, *UpdateGroupMemberRequest) (*emptypb.Empty, error)
 	Quit(context.Context, *UpdateGroupMemberRequest) (*emptypb.Empty, error)
 	KickOut(context.Context, *UpdateGroupMemberRequest) (*emptypb.Empty, error)
-	Mine(context.Context, *SearchGroupRequest) (*GroupMembersResponse, error)
+	Mine(context.Context, *SearchGroupRequest) (*GroupsResponse, error)
 	mustEmbedUnimplementedGroupServer()
 }
 
@@ -167,7 +167,7 @@ func (UnimplementedGroupServer) Quit(context.Context, *UpdateGroupMemberRequest)
 func (UnimplementedGroupServer) KickOut(context.Context, *UpdateGroupMemberRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method KickOut not implemented")
 }
-func (UnimplementedGroupServer) Mine(context.Context, *SearchGroupRequest) (*GroupMembersResponse, error) {
+func (UnimplementedGroupServer) Mine(context.Context, *SearchGroupRequest) (*GroupsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Mine not implemented")
 }
 func (UnimplementedGroupServer) mustEmbedUnimplementedGroupServer() {}

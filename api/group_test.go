@@ -106,3 +106,14 @@ func TestGroupServer_Quit(t *testing.T) {
 		fmt.Printf("用户: %d, 退群成功\n", user.UserId)
 	}
 }
+
+func TestGroupServer_Mine(t *testing.T) {
+	c := client()
+	userId := 3
+	res, err := c.Mine(context.Background(), &proto.SearchGroupRequest{UserId: int64(userId)})
+	if err != nil {
+		fmt.Printf("获取我的群组失败: %s\n", err.Error())
+		return
+	}
+	fmt.Printf("我的群组[%d]: %+v\n", res.Total, res.Groups)
+}

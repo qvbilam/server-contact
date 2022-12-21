@@ -44,6 +44,15 @@ func (b *GroupBusiness) Detail() *model.Group {
 	return &m
 }
 
+func (b *GroupBusiness) List() []model.Group {
+	condition := b.ToModel()
+	var m []model.Group
+	if res := global.DB.Where(condition).Find(&m); res.RowsAffected == 0 {
+		return nil
+	}
+	return m
+}
+
 func (b *GroupBusiness) ToModel() model.Group {
 	m := model.Group{}
 	if b.Code != nil {

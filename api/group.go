@@ -51,7 +51,53 @@ func (s *GroupServer) Delete(ctx context.Context, request *proto.UpdateGroupRequ
 
 // Get todo
 func (s *GroupServer) Get(ctx context.Context, request *proto.SearchGroupRequest) (*proto.GroupsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "服务未实现")
+	b := business.GroupBusiness{}
+	models := b.List()
+	var members []*proto.GroupResponse
+	for _, model := range models {
+		members = append(members, &proto.GroupResponse{
+			Id:               model.ID,
+			UserId:           model.UserID,
+			Code:             model.Code,
+			Name:             model.Name,
+			Avatar:           model.Avatar,
+			Cover:            model.Cover,
+			Introduce:        model.Introduce,
+			MemberCount:      model.MemberCount,
+			AllowMemberCount: model.AllowMemberCount,
+		})
+	}
+
+	return &proto.GroupsResponse{
+		Total:  int64(len(members)),
+		Groups: members,
+	}, nil
+}
+
+func (s *GroupServer) Mine(ctx context.Context, request *proto.SearchGroupRequest) (*proto.GroupsResponse, error) {
+	b := business.GroupBusiness{
+		UserId: &request.UserId,
+	}
+	models := b.List()
+	var members []*proto.GroupResponse
+	for _, model := range models {
+		members = append(members, &proto.GroupResponse{
+			Id:               model.ID,
+			UserId:           model.UserID,
+			Code:             model.Code,
+			Name:             model.Name,
+			Avatar:           model.Avatar,
+			Cover:            model.Cover,
+			Introduce:        model.Introduce,
+			MemberCount:      model.MemberCount,
+			AllowMemberCount: model.AllowMemberCount,
+		})
+	}
+
+	return &proto.GroupsResponse{
+		Total:  int64(len(members)),
+		Groups: members,
+	}, nil
 }
 
 func (s *GroupServer) Member(ctx context.Context, request *proto.SearchGroupMemberRequest) (*proto.GroupMembersResponse, error) {
@@ -142,10 +188,5 @@ func (s *GroupServer) Quit(ctx context.Context, request *proto.UpdateGroupMember
 
 // KickOut todo
 func (s *GroupServer) KickOut(ctx context.Context, request *proto.UpdateGroupMemberRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "服务未实现")
-}
-
-// Mine todo
-func (s *GroupServer) Mine(ctx context.Context, request *proto.SearchGroupRequest) (*proto.GroupMembersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "服务未实现")
 }
