@@ -25,6 +25,7 @@ func main() {
 	}
 	_ = db.AutoMigrate(
 		&model.Friend{},
+		&model.FriendApply{},
 		&model.Group{},
 		&model.GroupMember{},
 	)

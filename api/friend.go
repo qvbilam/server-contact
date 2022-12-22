@@ -2,6 +2,7 @@ package api
 
 import (
 	proto "contact/api/qvbilam/contact/v1"
+	"contact/business"
 	"context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -13,6 +14,11 @@ type FriendServer struct {
 }
 
 func (s *FriendServer) Create(ctx context.Context, request *proto.UpdateFriendRequest) (*emptypb.Empty, error) {
+	b := business.FriendBusiness{
+		UserID:       request.UserId,
+		FriendUserID: request.FriendUserId,
+		//Remark:       req,
+	}
 	return nil, status.Errorf(codes.Unimplemented, "服务未实现")
 }
 
