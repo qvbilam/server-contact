@@ -80,11 +80,11 @@ func (b *FriendApplyBusiness) Agree() error {
 	}
 
 	var f = []model.Friend{{
-		UserID:       b.UserID,
-		FriendUserID: b.ApplyUserID,
+		UserID:       entity.UserID,
+		FriendUserID: entity.ApplyUserID,
 	}, {
-		UserID:       b.ApplyUserID,
-		FriendUserID: b.UserID,
+		UserID:       entity.ApplyUserID,
+		FriendUserID: entity.UserID,
 	}}
 
 	res = tx.CreateInBatches(&f, 100)
@@ -118,12 +118,14 @@ func (b *FriendApplyBusiness) Reject() error {
 	return nil
 }
 
-func (b *FriendApplyBusiness) Users() []model.FriendApply {
+func (b *FriendApplyBusiness) Users() (int64, []model.FriendApply) {
 	var users []model.FriendApply
 	tx := global.DB
-	res := tx.Where(&model.FriendApply{UserID: b.UserID}).Find(&users)
+	res := tx.Where(&model.FriendApply{UserID: b.UserID}).Or(&model.FriendApply{ApplyUserID: b.UserID}).Find(&users)
 	if res.RowsAffected == 0 {
-		return nil
+		return 0, nil
 	}
-	return users
+
+	total := len(users)
+	return int64(total), users
 }

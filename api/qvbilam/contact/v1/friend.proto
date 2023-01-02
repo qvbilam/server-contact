@@ -46,7 +46,7 @@ message FriendApplyResponse {
 
 message FriendAppliesResponse {
   int64 total = 1;
-  repeated FriendResponse users = 2;
+  repeated FriendApplyResponse users = 2;
 }
 
 service friend {
