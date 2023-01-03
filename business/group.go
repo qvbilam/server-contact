@@ -5,6 +5,7 @@ import (
 	"contact/model"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"log"
 )
 
 type GroupBusiness struct {
@@ -23,6 +24,17 @@ type GroupBusiness struct {
 
 func (b *GroupBusiness) Create() (int64, error) {
 	m := b.ToModel()
+	ucB := GroupCodeBusiness{}
+	groupCode, err := ucB.RandomCode(false)
+	if err != nil {
+		log.Printf("生成群组code失败: %v\n", err)
+		return 0, status.Errorf(codes.Internal, "创建群组异常")
+	}
+	if groupCode == 0 {
+		return 0, status.Errorf(codes.Internal, "生成群组信息失败")
+	}
+	m.Code = groupCode
+
 	tx := global.DB.Begin()
 	// 创建群
 	if res := tx.Create(&m); res.RowsAffected == 0 || res.Error != nil {
