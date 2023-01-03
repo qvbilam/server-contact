@@ -3,22 +3,22 @@ package business
 import (
 	"contact/global"
 	"contact/model"
-	"gorm.io/gorm"
+	"fmt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type FriendBusiness struct {
 	ID           int64
 	UserID       int64
 	FriendUserID int64
-	Remark       string
+	Remark       *string
 }
 
-func (b *FriendBusiness) IsFriend(tx *gorm.DB) bool {
+func (b *FriendBusiness) IsFriend() bool {
 	var count int64
-	if tx == nil {
-		tx = global.DB
-	}
-	res := tx.Model(&model.Friend{}).Where(model.Friend{
+	fmt.Printf("%+v\n", b)
+	res := global.DB.Debug().Model(&model.Friend{}).Where(model.Friend{
 		UserID:       b.UserID,
 		FriendUserID: b.FriendUserID,
 	}).Count(&count)
@@ -29,14 +29,42 @@ func (b *FriendBusiness) IsFriend(tx *gorm.DB) bool {
 	return count > 0
 }
 
-func (b *FriendBusiness) Users() []model.Friend {
+func (b *FriendBusiness) Users() (int64, []model.Friend) {
 	var users []model.Friend
 	tx := global.DB
 	res := tx.Where(&model.Friend{UserID: b.UserID}).Find(&users)
 	if res.RowsAffected == 0 {
-		return nil
+		return 0, nil
 	}
-	return users
+	return int64(len(users)), users
+}
+
+func (b *FriendBusiness) Update() error {
+	entity := model.Friend{}
+	tx := global.DB
+	tx.Begin()
+	res := tx.Where(model.Friend{IDModel: model.IDModel{ID: b.ID}}).First(&entity)
+	if res.Error != nil || res.RowsAffected == 0 {
+		tx.Rollback()
+		return status.Errorf(codes.NotFound, "未找到好友")
+	}
+
+	if b.UserID != entity.UserID {
+		tx.Rollback()
+		return status.Errorf(codes.Unauthenticated, "非法操作")
+	}
+
+	if b.Remark != nil {
+		entity.Remark = *b.Remark
+	}
+
+	res = tx.Save(entity)
+	if res.Error != nil || res.RowsAffected == 0 {
+		tx.Rollback()
+		return status.Errorf(codes.Internal, "修改好友信息失败")
+	}
+	tx.Commit()
+	return nil
 }
 
 func (b *FriendBusiness) Delete() error {

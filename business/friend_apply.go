@@ -6,7 +6,6 @@ import (
 	"contact/model"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
@@ -17,12 +16,9 @@ type FriendApplyBusiness struct {
 	Content     string
 }
 
-func (b *FriendApplyBusiness) IsApply(tx *gorm.DB) bool {
+func (b *FriendApplyBusiness) IsApply() bool {
 	var count int64
-	if tx == nil {
-		tx = global.DB
-	}
-	res := tx.Model(&model.FriendApply{}).Where(model.FriendApply{
+	res := global.DB.Model(&model.FriendApply{}).Where(model.FriendApply{
 		UserID:      b.UserID,
 		ApplyUserID: b.ApplyUserID,
 		Status:      enum.FriendApplyStatusWait,
@@ -36,17 +32,16 @@ func (b *FriendApplyBusiness) IsApply(tx *gorm.DB) bool {
 }
 
 func (b *FriendApplyBusiness) Apply() error {
-	tx := global.DB
-	tx.Begin()
+	tx := global.DB.Begin()
 	fb := FriendBusiness{
 		UserID:       b.ApplyUserID,
 		FriendUserID: b.UserID,
 	}
-	if fb.IsFriend(tx) {
+	if fb.IsFriend() {
 		tx.Rollback()
 		return status.Errorf(codes.AlreadyExists, "已经是好友")
 	}
-	if b.IsApply(tx) {
+	if b.IsApply() {
 		tx.Rollback()
 		return status.Errorf(codes.AlreadyExists, "等待对方确认")
 	}
@@ -63,8 +58,7 @@ func (b *FriendApplyBusiness) Apply() error {
 }
 
 func (b *FriendApplyBusiness) Agree() error {
-	tx := global.DB
-	tx.Begin()
+	tx := global.DB.Begin()
 	entity := model.FriendApply{}
 	res := tx.Where(&model.FriendApply{Status: enum.FriendApplyStatusWait}).Clauses(clause.Locking{Strength: "UPDATE"}).First(&entity, b.ID)
 	if res.Error != nil || res.RowsAffected == 0 {
@@ -98,8 +92,7 @@ func (b *FriendApplyBusiness) Agree() error {
 }
 
 func (b *FriendApplyBusiness) Reject() error {
-	tx := global.DB
-	tx.Begin()
+	tx := global.DB.Begin()
 	entity := model.FriendApply{}
 	res := tx.Where(&model.FriendApply{Status: enum.FriendApplyStatusWait}).Clauses(clause.Locking{Strength: "UPDATE"}).First(&entity, b.ID)
 	if res.Error != nil || res.RowsAffected == 0 {

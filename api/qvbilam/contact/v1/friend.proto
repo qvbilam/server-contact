@@ -41,7 +41,7 @@ message FriendApplyResponse {
   int64 applyUserId = 3;
   string content = 4;
   int64 status = 5;
-  userPb.v1.UserResponse user = 6;
+  userPb.v1.UserResponse applyUser = 6;
 }
 
 message FriendAppliesResponse {
