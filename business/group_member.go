@@ -75,6 +75,22 @@ func (b *GroupMemberBusiness) Delete() (int64, error) {
 	return res.RowsAffected, nil
 }
 
+func (b *GroupMemberBusiness) Member() (*model.GroupMember, error) {
+	var member *model.GroupMember
+	res := global.DB.Where(&model.GroupMember{
+		GroupID: *b.GroupID,
+		UserModel: model.UserModel{
+			UserID: *b.UserID,
+		},
+	}).First(&member)
+
+	if res.RowsAffected == 0 || res.Error != nil || member == nil {
+		return nil, status.Errorf(codes.NotFound, "用户未加入群")
+	}
+
+	return member, nil
+}
+
 func (b *GroupMemberBusiness) Members() []model.GroupMember {
 	var members []model.GroupMember
 	if res := global.DB.Where(model.GroupMember{GroupID: *b.GroupID}).Find(&members); res.RowsAffected == 0 {

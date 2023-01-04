@@ -78,7 +78,15 @@ func (s *GroupServer) Mine(ctx context.Context, request *proto.SearchGroupReques
 	b := business.GroupBusiness{
 		UserId: &request.UserId,
 	}
-	models := b.List()
+
+	user, err := global.UserServerClient.Detail(context.Background(), &userProto.GetUserRequest{
+		Id: request.UserId,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	total, models := b.Mine()
 	var members []*proto.GroupResponse
 	for _, model := range models {
 		members = append(members, &proto.GroupResponse{
@@ -91,16 +99,55 @@ func (s *GroupServer) Mine(ctx context.Context, request *proto.SearchGroupReques
 			Introduce:        model.Introduce,
 			MemberCount:      model.MemberCount,
 			AllowMemberCount: model.AllowMemberCount,
+			Member: &proto.GroupMemberResponse{
+				Id:          model.Member.ID,
+				User:        user,
+				Nickname:    model.Member.Nickname,
+				Role:        model.Member.Role,
+				Remark:      model.Member.Remark,
+				IsDnd:       model.Member.IsDnd,
+				IsBanned:    model.Member.IsBanned,
+				CreatedTime: model.Member.CreatedAt.Unix(),
+			},
 		})
 	}
 
 	return &proto.GroupsResponse{
-		Total:  int64(len(members)),
+		Total:  total,
 		Groups: members,
 	}, nil
 }
 
-func (s *GroupServer) Member(ctx context.Context, request *proto.SearchGroupMemberRequest) (*proto.GroupMembersResponse, error) {
+func (s *GroupServer) Member(ctx context.Context, request *proto.SearchGroupMemberRequest) (*proto.GroupMemberResponse, error) {
+	user, err := global.UserServerClient.Detail(context.Background(), &userProto.GetUserRequest{
+		Id: request.UserId,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	b := business.GroupMemberBusiness{
+		GroupID: &request.GroupId,
+		UserID:  &request.UserId,
+	}
+	member, err := b.Member()
+	if err != nil {
+		return nil, err
+	}
+
+	return &proto.GroupMemberResponse{
+		User:        user,
+		Nickname:    member.Nickname,
+		Role:        member.Role,
+		Level:       member.Level,
+		Remark:      member.Remark,
+		IsDnd:       member.IsDnd,
+		IsBanned:    member.IsBanned,
+		CreatedTime: member.CreatedAt.Unix(),
+	}, nil
+}
+
+func (s *GroupServer) Members(ctx context.Context, request *proto.SearchGroupMemberRequest) (*proto.GroupMembersResponse, error) {
 	res := &proto.GroupMembersResponse{
 		Total:   0,
 		Members: nil,

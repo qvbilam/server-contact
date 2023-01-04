@@ -65,6 +65,37 @@ func (b *GroupBusiness) List() []model.Group {
 	return m
 }
 
+func (b *GroupBusiness) Mine() (int64, []model.Group) {
+	var groupMembers []model.GroupMember
+	if res := global.DB.Where(&model.GroupMember{
+		UserModel: model.UserModel{
+			UserID: *b.UserId,
+		},
+	}).Find(&groupMembers); res.RowsAffected == 0 || res.Error != nil {
+		return res.RowsAffected, nil
+	}
+
+	var groupIds []int64
+	userGroupMap := make(map[int64]model.GroupMember)
+	for _, g := range groupMembers {
+		groupIds = append(groupIds, g.GroupID)
+		userGroupMap[g.GroupID] = g
+	}
+
+	// 获取群组
+	var groups []model.Group
+	res := global.DB.Find(&groups, groupIds)
+	if res.RowsAffected == 0 || res.Error != nil {
+		return res.RowsAffected, nil
+	}
+
+	for k, g := range groups {
+		groups[k].Member = userGroupMap[g.ID]
+	}
+
+	return res.RowsAffected, groups
+}
+
 func (b *GroupBusiness) ToModel() model.Group {
 	m := model.Group{}
 	if b.Code != nil {

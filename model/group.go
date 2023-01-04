@@ -20,6 +20,8 @@ type Group struct {
 	AllowMemberCount int64  `gorm:"type:int not null default 0;comment:允许群成员人数"`
 	IsGlobalBanned   bool   `gorm:"type:tinyint(1) not null default 0;comment:开启群禁言"`
 	BannedEndAt      *time.Time
+	Member           GroupMember   // 用户自身
+	Members          []GroupMember // 所有成员
 	DateModel
 	DeletedModel
 }

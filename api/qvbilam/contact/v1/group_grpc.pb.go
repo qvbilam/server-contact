@@ -27,7 +27,8 @@ type GroupClient interface {
 	Update(ctx context.Context, in *UpdateGroupRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	Delete(ctx context.Context, in *UpdateGroupRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	Get(ctx context.Context, in *SearchGroupRequest, opts ...grpc.CallOption) (*GroupsResponse, error)
-	Member(ctx context.Context, in *SearchGroupMemberRequest, opts ...grpc.CallOption) (*GroupMembersResponse, error)
+	Member(ctx context.Context, in *SearchGroupMemberRequest, opts ...grpc.CallOption) (*GroupMemberResponse, error)
+	Members(ctx context.Context, in *SearchGroupMemberRequest, opts ...grpc.CallOption) (*GroupMembersResponse, error)
 	Join(ctx context.Context, in *UpdateGroupMemberRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	Quit(ctx context.Context, in *UpdateGroupMemberRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	KickOut(ctx context.Context, in *UpdateGroupMemberRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
@@ -78,9 +79,18 @@ func (c *groupClient) Get(ctx context.Context, in *SearchGroupRequest, opts ...g
 	return out, nil
 }
 
-func (c *groupClient) Member(ctx context.Context, in *SearchGroupMemberRequest, opts ...grpc.CallOption) (*GroupMembersResponse, error) {
-	out := new(GroupMembersResponse)
+func (c *groupClient) Member(ctx context.Context, in *SearchGroupMemberRequest, opts ...grpc.CallOption) (*GroupMemberResponse, error) {
+	out := new(GroupMemberResponse)
 	err := c.cc.Invoke(ctx, "/contactPb.v1.Group/Member", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *groupClient) Members(ctx context.Context, in *SearchGroupMemberRequest, opts ...grpc.CallOption) (*GroupMembersResponse, error) {
+	out := new(GroupMembersResponse)
+	err := c.cc.Invoke(ctx, "/contactPb.v1.Group/Members", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +141,8 @@ type GroupServer interface {
 	Update(context.Context, *UpdateGroupRequest) (*emptypb.Empty, error)
 	Delete(context.Context, *UpdateGroupRequest) (*emptypb.Empty, error)
 	Get(context.Context, *SearchGroupRequest) (*GroupsResponse, error)
-	Member(context.Context, *SearchGroupMemberRequest) (*GroupMembersResponse, error)
+	Member(context.Context, *SearchGroupMemberRequest) (*GroupMemberResponse, error)
+	Members(context.Context, *SearchGroupMemberRequest) (*GroupMembersResponse, error)
 	Join(context.Context, *UpdateGroupMemberRequest) (*emptypb.Empty, error)
 	Quit(context.Context, *UpdateGroupMemberRequest) (*emptypb.Empty, error)
 	KickOut(context.Context, *UpdateGroupMemberRequest) (*emptypb.Empty, error)
@@ -155,8 +166,11 @@ func (UnimplementedGroupServer) Delete(context.Context, *UpdateGroupRequest) (*e
 func (UnimplementedGroupServer) Get(context.Context, *SearchGroupRequest) (*GroupsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
 }
-func (UnimplementedGroupServer) Member(context.Context, *SearchGroupMemberRequest) (*GroupMembersResponse, error) {
+func (UnimplementedGroupServer) Member(context.Context, *SearchGroupMemberRequest) (*GroupMemberResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Member not implemented")
+}
+func (UnimplementedGroupServer) Members(context.Context, *SearchGroupMemberRequest) (*GroupMembersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Members not implemented")
 }
 func (UnimplementedGroupServer) Join(context.Context, *UpdateGroupMemberRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Join not implemented")
@@ -273,6 +287,24 @@ func _Group_Member_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Group_Members_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchGroupMemberRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GroupServer).Members(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/contactPb.v1.Group/Members",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GroupServer).Members(ctx, req.(*SearchGroupMemberRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Group_Join_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateGroupMemberRequest)
 	if err := dec(in); err != nil {
@@ -371,6 +403,10 @@ var Group_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Member",
 			Handler:    _Group_Member_Handler,
+		},
+		{
+			MethodName: "Members",
+			Handler:    _Group_Members_Handler,
 		},
 		{
 			MethodName: "Join",
