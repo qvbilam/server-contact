@@ -1,12 +1,13 @@
 package config
 
 type ServerConfig struct {
-	Name             string           `mapstructure:"name" json:"name"`
-	Port             int              `mapstructure:"port" json:"port"`
-	Tags             []string         `mapstructure:"tags" json:"tags"`
-	DBConfig         DBConfig         `mapstructure:"db" json:"db"`
-	RedisConfig      RedisConfig      `mapstructure:"redis" json:"redis"`
-	UserServerConfig UserServerConfig `mapstructure:"user-server" json:"user-server"`
+	Name                string              `mapstructure:"name" json:"name"`
+	Port                int                 `mapstructure:"port" json:"port"`
+	Tags                []string            `mapstructure:"tags" json:"tags"`
+	DBConfig            DBConfig            `mapstructure:"db" json:"db"`
+	RedisConfig         RedisConfig         `mapstructure:"redis" json:"redis"`
+	UserServerConfig    UserServerConfig    `mapstructure:"user-server" json:"user-server"`
+	MessageServerConfig MessageServerConfig `mapstructure:"message-server" json:"message-server"`
 }
 
 type DBConfig struct {
@@ -26,6 +27,12 @@ type RedisConfig struct {
 }
 
 type UserServerConfig struct {
+	Host string `mapstructure:"host" json:"host"`
+	Port int64  `mapstructure:"port" json:"port"`
+	Name string `mapstructure:"name" json:"name"`
+}
+
+type MessageServerConfig struct {
 	Host string `mapstructure:"host" json:"host"`
 	Port int64  `mapstructure:"port" json:"port"`
 	Name string `mapstructure:"name" json:"name"`

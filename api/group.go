@@ -2,6 +2,7 @@ package api
 
 import (
 	proto "contact/api/qvbilam/contact/v1"
+	messageProto "contact/api/qvbilam/message/v1"
 	userProto "contact/api/qvbilam/user/v1"
 	"contact/business"
 	"contact/enum"
@@ -218,6 +219,16 @@ func (s *GroupServer) Join(ctx context.Context, request *proto.UpdateGroupMember
 		return nil, err
 	}
 
+	global.MessageServerClient.CreateGroupMessage(context.Background(), &messageProto.CreateGroupRequest{
+		UserId:  0,
+		GroupId: request.GroupId,
+		Message: &messageProto.MessageRequest{
+			Type:    "",
+			Content: "加入群聊",
+			Url:     "",
+			Extra:   "",
+		},
+	})
 	return &emptypb.Empty{}, nil
 }
 

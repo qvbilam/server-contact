@@ -1,6 +1,7 @@
 package initialize
 
 import (
+	messageProto "contact/api/qvbilam/message/v1"
 	userProto "contact/api/qvbilam/user/v1"
 	"contact/global"
 	"fmt"
@@ -18,8 +19,9 @@ type dialConfig struct {
 }
 
 type serverClientConfig struct {
-	userDialConfig *dialConfig
-	fileDialConfig *dialConfig
+	messageDialConfig *dialConfig
+	userDialConfig    *dialConfig
+	fileDialConfig    *dialConfig
 }
 
 func InitServer() {
@@ -29,9 +31,15 @@ func InitServer() {
 			port: global.ServerConfig.UserServerConfig.Port,
 			name: global.ServerConfig.UserServerConfig.Name,
 		},
+		messageDialConfig: &dialConfig{
+			host: global.ServerConfig.MessageServerConfig.Host,
+			port: global.ServerConfig.MessageServerConfig.Port,
+			name: global.ServerConfig.MessageServerConfig.Name,
+		},
 	}
 
 	s.initUserServer()
+	s.initMessageServer()
 }
 
 func clientOption() []retry.CallOption {
@@ -58,4 +66,19 @@ func (s *serverClientConfig) initUserServer() {
 	userClient := userProto.NewUserClient(conn)
 
 	global.UserServerClient = userClient
+}
+
+func (s *serverClientConfig) initMessageServer() {
+	opts := clientOption()
+
+	conn, err := grpc.Dial(
+		fmt.Sprintf("%s:%d", s.messageDialConfig.host, s.messageDialConfig.port),
+		grpc.WithInsecure(),
+		grpc.WithUnaryInterceptor(retry.UnaryClientInterceptor(opts...)))
+	if err != nil {
+		zap.S().Fatalf("%s dial error: %s", s.messageDialConfig.name, err)
+	}
+
+	messageClient := messageProto.NewMessageClient(conn)
+	global.MessageServerClient = messageClient
 }
