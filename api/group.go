@@ -2,12 +2,12 @@ package api
 
 import (
 	proto "contact/api/qvbilam/contact/v1"
-	messageProto "contact/api/qvbilam/message/v1"
 	userProto "contact/api/qvbilam/user/v1"
 	"contact/business"
 	"contact/enum"
 	"contact/global"
 	"context"
+	"fmt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -209,6 +209,11 @@ func (s *GroupServer) Members(ctx context.Context, request *proto.SearchGroupMem
 }
 
 func (s *GroupServer) Join(ctx context.Context, request *proto.UpdateGroupMemberRequest) (*emptypb.Empty, error) {
+	user, err := global.UserServerClient.Detail(context.Background(), &userProto.GetUserRequest{Id: request.UserId})
+	if err != nil {
+		return nil, err
+	}
+
 	role := int64(enum.GroupRoleMember)
 	b := business.GroupMemberBusiness{
 		GroupID: &request.GroupId,
@@ -219,16 +224,9 @@ func (s *GroupServer) Join(ctx context.Context, request *proto.UpdateGroupMember
 		return nil, err
 	}
 
-	global.MessageServerClient.CreateGroupMessage(context.Background(), &messageProto.CreateGroupRequest{
-		UserId:  0,
-		GroupId: request.GroupId,
-		Message: &messageProto.MessageRequest{
-			Type:    "",
-			Content: "加入群聊",
-			Url:     "",
-			Extra:   "",
-		},
-	})
+	push := business.PushBusiness{}
+	err = push.GroupJoin(request.GroupId, user)
+	fmt.Printf("发送消息结果: %s\n", err)
 	return &emptypb.Empty{}, nil
 }
 
