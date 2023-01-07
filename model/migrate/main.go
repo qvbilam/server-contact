@@ -28,6 +28,6 @@ func main() {
 		&model.FriendApply{},
 		&model.Group{},
 		&model.GroupMember{},
-		&model.Conversation{},
+		&model.Conversation{}, // 创建这个表需要现将 object 注释,防止创建object表
 	)
 }
