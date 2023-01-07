@@ -22,6 +22,7 @@ type Group struct {
 	BannedEndAt      *time.Time
 	Member           GroupMember   // 用户自身
 	Members          []GroupMember // 所有成员
+	Conversation     Conversation  `gorm:"polymorphic:Bus;"`
 	DateModel
 	DeletedModel
 }

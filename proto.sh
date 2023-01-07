@@ -21,6 +21,7 @@ proto message message v1
 
 proto contact friend v1
 proto contact group v1
+proto contact conversation v1
 
 
 

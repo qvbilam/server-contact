@@ -24,6 +24,7 @@ func main() {
 	server := grpc.NewServer()
 	proto.RegisterFriendServer(server, &api.FriendServer{})
 	proto.RegisterGroupServer(server, &api.GroupServer{})
+	proto.RegisterConversationServer(server, &api.ConversationServer{})
 
 	Host := "0.0.0.0"
 	Port := global.ServerConfig.Port

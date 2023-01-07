@@ -28,5 +28,6 @@ func main() {
 		&model.FriendApply{},
 		&model.Group{},
 		&model.GroupMember{},
+		&model.Conversation{},
 	)
 }

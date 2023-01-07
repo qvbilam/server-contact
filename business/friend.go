@@ -36,6 +36,7 @@ func (b *FriendBusiness) Users() (int64, []model.Friend) {
 	if res.RowsAffected == 0 {
 		return 0, nil
 	}
+
 	return int64(len(users)), users
 }
 
