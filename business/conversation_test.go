@@ -53,8 +53,8 @@ func TestConversationBusiness_Create(t *testing.T) {
 	initClient()
 	b := ConversationBusiness{
 		UserID:          1,
-		BusType:         "group",
-		BusID:           1,
+		ObjectType:      "group",
+		ObjectID:        1,
 		LastMessage:     "你好啊",
 		LastMessageTime: time.Now().UnixMicro(),
 	}
@@ -67,8 +67,8 @@ func TestConversationBusiness_Create(t *testing.T) {
 
 	bf := ConversationBusiness{
 		UserID:          1,
-		BusType:         "friend",
-		BusID:           1,
+		ObjectType:      "friend",
+		ObjectID:        1,
 		LastMessage:     "[表情]",
 		LastMessageTime: time.Now().UnixMicro(),
 	}

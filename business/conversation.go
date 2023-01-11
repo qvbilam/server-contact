@@ -58,7 +58,7 @@ func (b *ConversationBusiness) List() (int64, []*model.Conversation) {
 
 	var userIds []int64
 	for _, c := range conversations {
-		if c.ObjectType == enum.ObjectTypeGroup {
+		if c.ObjectType == enum.ObjectTypeUser {
 			userIds = append(userIds, c.ObjectID)
 		}
 	}
@@ -86,11 +86,15 @@ func (b *ConversationBusiness) List() (int64, []*model.Conversation) {
 
 	for _, c := range conversations {
 		if c.ObjectType == enum.ObjectTypeGroup {
-			c.Object.ID = groupMap[c.ObjectID].ID
-			c.Object.Name = groupMap[c.ObjectID].Name
-			c.Object.Avatar = groupMap[c.ObjectID].Avatar
-			c.Object.Remark = groupMap[c.ObjectID].Member.Remark
-			c.Object.IsDND = groupMap[c.ObjectID].Member.IsDnd
+
+			if _, ok := groupMap[c.ObjectID]; ok {
+				c.Object = &model.Object{}
+				c.Object.ID = groupMap[c.ObjectID].ID
+				c.Object.Name = groupMap[c.ObjectID].Name
+				c.Object.Avatar = groupMap[c.ObjectID].Avatar
+				c.Object.Remark = groupMap[c.ObjectID].Member.Remark
+				c.Object.IsDND = groupMap[c.ObjectID].Member.IsDnd
+			}
 		}
 		if c.ObjectType == enum.ObjectTypeUser {
 			remark := ""
@@ -98,6 +102,7 @@ func (b *ConversationBusiness) List() (int64, []*model.Conversation) {
 				remark = friendMap[c.ObjectID].Remark
 			}
 			if _, ok := userMap[c.ObjectID]; ok {
+				c.Object = &model.Object{}
 				c.Object.ID = userMap[c.ObjectID].Id
 				c.Object.Name = userMap[c.ObjectID].Nickname
 				c.Object.Avatar = userMap[c.ObjectID].Avatar
@@ -106,6 +111,7 @@ func (b *ConversationBusiness) List() (int64, []*model.Conversation) {
 		}
 
 	}
+
 	return res.RowsAffected, conversations
 }
 
@@ -122,11 +128,16 @@ func (b *ConversationBusiness) Create() error {
 	// 时间戳转 time.Time
 	t := time.UnixMicro(b.LastMessageTime)
 
+	newCount := 0
+	if entity.LastMessage != "" {
+		newCount = 1
+	}
+
 	if res.RowsAffected == 0 {
 		entity.UserID = b.UserID
 		entity.ObjectType = b.ObjectType
 		entity.ObjectID = b.ObjectID
-		entity.NewsCount = 1
+		entity.NewsCount = int64(newCount)
 		if b.Tips != nil {
 			entity.Tips = *b.Tips
 		}
@@ -135,7 +146,7 @@ func (b *ConversationBusiness) Create() error {
 		res = tx.Create(&entity)
 	} else {
 		updates := map[string]interface{}{
-			"news_count":      gorm.Expr("news_count + ?", 1),
+			"news_count":      gorm.Expr("news_count + ?", newCount),
 			"last_message":    b.LastMessage,
 			"last_message_at": &t,
 		}
@@ -156,7 +167,7 @@ func (b *ConversationBusiness) Create() error {
 
 func (b *ConversationBusiness) Delete() error {
 	tx := global.DB.Begin()
-	res := tx.Delete(&model.Conversation{IDModel: model.IDModel{ID: b.ID}}, b.ID)
+	res := tx.Where(&model.Conversation{UserID: b.UserID}).Delete(&model.Conversation{IDModel: model.IDModel{ID: b.ID}}, b.ID)
 	if res.RowsAffected == 0 || res.Error != nil {
 		tx.Rollback()
 		return res.Error

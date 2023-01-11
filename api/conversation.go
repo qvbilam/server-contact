@@ -58,7 +58,7 @@ func (s *ConversationServer) Create(ctx context.Context, request *proto.UpdateCo
 }
 
 func (s *ConversationServer) Delete(ctx context.Context, request *proto.UpdateConversationRequest) (*emptypb.Empty, error) {
-	b := business.ConversationBusiness{ID: request.Id}
+	b := business.ConversationBusiness{ID: request.Id, UserID: request.UserId}
 	_ = b.Delete()
 	return &emptypb.Empty{}, nil
 }
