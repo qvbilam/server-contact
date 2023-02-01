@@ -5,6 +5,7 @@ import (
 	userProto "contact/api/qvbilam/user/v1"
 	"contact/config"
 	"github.com/go-redis/redis/v8"
+	"github.com/streadway/amqp"
 	"gorm.io/gorm"
 )
 
@@ -14,4 +15,5 @@ var (
 	ServerConfig        *config.ServerConfig
 	UserServerClient    userProto.UserClient
 	MessageServerClient messageProto.MessageClient
+	MessageQueueClient  *amqp.Connection
 )
