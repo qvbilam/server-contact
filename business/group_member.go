@@ -4,6 +4,7 @@ import (
 	"contact/enum"
 	"contact/global"
 	"contact/model"
+	"fmt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm/clause"
@@ -91,12 +92,14 @@ func (b *GroupMemberBusiness) Member() (*model.GroupMember, error) {
 	return member, nil
 }
 
-func (b *GroupMemberBusiness) Members() []model.GroupMember {
+func (b *GroupMemberBusiness) Members() ([]model.GroupMember, int64) {
 	var members []model.GroupMember
-	if res := global.DB.Where(model.GroupMember{GroupID: *b.GroupID}).Find(&members); res.RowsAffected == 0 {
-		return nil
+	fmt.Printf("tmd: %+v\n", b)
+	res := global.DB.Where(model.GroupMember{GroupID: *b.GroupID}).Find(&members)
+	if res.RowsAffected == 0 {
+		return nil, 0
 	}
-	return members
+	return members, res.RowsAffected
 }
 
 func (b *GroupMemberBusiness) ToModel() model.GroupMember {

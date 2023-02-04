@@ -46,6 +46,7 @@ message UpdateConversationRequest {
 
 service conversation {
   rpc Get(GetConversationRequest) returns (ConversationsResponse);
+  rpc Read(UpdateConversationRequest) returns (google.protobuf.Empty);
   rpc Create(UpdateConversationRequest) returns (google.protobuf.Empty);
   rpc Delete(UpdateConversationRequest) returns (google.protobuf.Empty);
 }

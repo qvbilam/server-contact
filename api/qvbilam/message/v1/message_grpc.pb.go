@@ -28,10 +28,15 @@ type MessageClient interface {
 	DeleteQueue(ctx context.Context, in *UpdateQueueRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	CreatePrivateMessage(ctx context.Context, in *CreatePrivateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	CreateRoomMessage(ctx context.Context, in *CreateRoomRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	GetPrivateMessage(ctx context.Context, in *GetPrivateMessageRequest, opts ...grpc.CallOption) (*MessagesResponse, error)
+	CreateBroadcastUserMessage(ctx context.Context, in *CreateBroadcastUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	CreateGroupMessage(ctx context.Context, in *CreateGroupRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	CreateGroupTxtMessage(ctx context.Context, in *CreateGroupRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	CreateGroupCmdMessage(ctx context.Context, in *CreateGroupRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	CreateGroupTipMessage(ctx context.Context, in *CreateGroupRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	GetGroupMessage(ctx context.Context, in *GetGroupMessageRequest, opts ...grpc.CallOption) (*MessagesResponse, error)
+	CreateSystemMessage(ctx context.Context, in *CreateSystemRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	CreateTipMessage(ctx context.Context, in *CreateTipRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type messageClient struct {
@@ -87,6 +92,24 @@ func (c *messageClient) CreateRoomMessage(ctx context.Context, in *CreateRoomReq
 	return out, nil
 }
 
+func (c *messageClient) GetPrivateMessage(ctx context.Context, in *GetPrivateMessageRequest, opts ...grpc.CallOption) (*MessagesResponse, error) {
+	out := new(MessagesResponse)
+	err := c.cc.Invoke(ctx, "/messagePb.v1.Message/GetPrivateMessage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *messageClient) CreateBroadcastUserMessage(ctx context.Context, in *CreateBroadcastUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/messagePb.v1.Message/CreateBroadcastUserMessage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *messageClient) CreateGroupMessage(ctx context.Context, in *CreateGroupRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/messagePb.v1.Message/CreateGroupMessage", in, out, opts...)
@@ -123,6 +146,33 @@ func (c *messageClient) CreateGroupTipMessage(ctx context.Context, in *CreateGro
 	return out, nil
 }
 
+func (c *messageClient) GetGroupMessage(ctx context.Context, in *GetGroupMessageRequest, opts ...grpc.CallOption) (*MessagesResponse, error) {
+	out := new(MessagesResponse)
+	err := c.cc.Invoke(ctx, "/messagePb.v1.Message/GetGroupMessage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *messageClient) CreateSystemMessage(ctx context.Context, in *CreateSystemRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/messagePb.v1.Message/CreateSystemMessage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *messageClient) CreateTipMessage(ctx context.Context, in *CreateTipRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/messagePb.v1.Message/CreateTipMessage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MessageServer is the server API for Message service.
 // All implementations must embed UnimplementedMessageServer
 // for forward compatibility
@@ -132,10 +182,15 @@ type MessageServer interface {
 	DeleteQueue(context.Context, *UpdateQueueRequest) (*emptypb.Empty, error)
 	CreatePrivateMessage(context.Context, *CreatePrivateRequest) (*emptypb.Empty, error)
 	CreateRoomMessage(context.Context, *CreateRoomRequest) (*emptypb.Empty, error)
+	GetPrivateMessage(context.Context, *GetPrivateMessageRequest) (*MessagesResponse, error)
+	CreateBroadcastUserMessage(context.Context, *CreateBroadcastUserRequest) (*emptypb.Empty, error)
 	CreateGroupMessage(context.Context, *CreateGroupRequest) (*emptypb.Empty, error)
 	CreateGroupTxtMessage(context.Context, *CreateGroupRequest) (*emptypb.Empty, error)
 	CreateGroupCmdMessage(context.Context, *CreateGroupRequest) (*emptypb.Empty, error)
 	CreateGroupTipMessage(context.Context, *CreateGroupRequest) (*emptypb.Empty, error)
+	GetGroupMessage(context.Context, *GetGroupMessageRequest) (*MessagesResponse, error)
+	CreateSystemMessage(context.Context, *CreateSystemRequest) (*emptypb.Empty, error)
+	CreateTipMessage(context.Context, *CreateTipRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedMessageServer()
 }
 
@@ -158,6 +213,12 @@ func (UnimplementedMessageServer) CreatePrivateMessage(context.Context, *CreateP
 func (UnimplementedMessageServer) CreateRoomMessage(context.Context, *CreateRoomRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateRoomMessage not implemented")
 }
+func (UnimplementedMessageServer) GetPrivateMessage(context.Context, *GetPrivateMessageRequest) (*MessagesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPrivateMessage not implemented")
+}
+func (UnimplementedMessageServer) CreateBroadcastUserMessage(context.Context, *CreateBroadcastUserRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateBroadcastUserMessage not implemented")
+}
 func (UnimplementedMessageServer) CreateGroupMessage(context.Context, *CreateGroupRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateGroupMessage not implemented")
 }
@@ -169,6 +230,15 @@ func (UnimplementedMessageServer) CreateGroupCmdMessage(context.Context, *Create
 }
 func (UnimplementedMessageServer) CreateGroupTipMessage(context.Context, *CreateGroupRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateGroupTipMessage not implemented")
+}
+func (UnimplementedMessageServer) GetGroupMessage(context.Context, *GetGroupMessageRequest) (*MessagesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetGroupMessage not implemented")
+}
+func (UnimplementedMessageServer) CreateSystemMessage(context.Context, *CreateSystemRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateSystemMessage not implemented")
+}
+func (UnimplementedMessageServer) CreateTipMessage(context.Context, *CreateTipRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateTipMessage not implemented")
 }
 func (UnimplementedMessageServer) mustEmbedUnimplementedMessageServer() {}
 
@@ -273,6 +343,42 @@ func _Message_CreateRoomMessage_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Message_GetPrivateMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPrivateMessageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MessageServer).GetPrivateMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/messagePb.v1.Message/GetPrivateMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MessageServer).GetPrivateMessage(ctx, req.(*GetPrivateMessageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Message_CreateBroadcastUserMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateBroadcastUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MessageServer).CreateBroadcastUserMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/messagePb.v1.Message/CreateBroadcastUserMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MessageServer).CreateBroadcastUserMessage(ctx, req.(*CreateBroadcastUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Message_CreateGroupMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateGroupRequest)
 	if err := dec(in); err != nil {
@@ -345,6 +451,60 @@ func _Message_CreateGroupTipMessage_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Message_GetGroupMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetGroupMessageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MessageServer).GetGroupMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/messagePb.v1.Message/GetGroupMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MessageServer).GetGroupMessage(ctx, req.(*GetGroupMessageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Message_CreateSystemMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateSystemRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MessageServer).CreateSystemMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/messagePb.v1.Message/CreateSystemMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MessageServer).CreateSystemMessage(ctx, req.(*CreateSystemRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Message_CreateTipMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateTipRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MessageServer).CreateTipMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/messagePb.v1.Message/CreateTipMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MessageServer).CreateTipMessage(ctx, req.(*CreateTipRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Message_ServiceDesc is the grpc.ServiceDesc for Message service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -373,6 +533,14 @@ var Message_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Message_CreateRoomMessage_Handler,
 		},
 		{
+			MethodName: "GetPrivateMessage",
+			Handler:    _Message_GetPrivateMessage_Handler,
+		},
+		{
+			MethodName: "CreateBroadcastUserMessage",
+			Handler:    _Message_CreateBroadcastUserMessage_Handler,
+		},
+		{
 			MethodName: "CreateGroupMessage",
 			Handler:    _Message_CreateGroupMessage_Handler,
 		},
@@ -387,6 +555,18 @@ var Message_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateGroupTipMessage",
 			Handler:    _Message_CreateGroupTipMessage_Handler,
+		},
+		{
+			MethodName: "GetGroupMessage",
+			Handler:    _Message_GetGroupMessage_Handler,
+		},
+		{
+			MethodName: "CreateSystemMessage",
+			Handler:    _Message_CreateSystemMessage_Handler,
+		},
+		{
+			MethodName: "CreateTipMessage",
+			Handler:    _Message_CreateTipMessage_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

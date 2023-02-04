@@ -49,6 +49,14 @@ func initDBClient() {
 	global.DB = db
 }
 
+func TestConsumeQueue(t *testing.T) {
+	u := time.Now().UnixMilli()
+	fmt.Printf("时间戳: %d\n", u)
+	//date := time.UnixMilli(u).Format("2006-01-02 15:04:05.000")
+	date := time.UnixMilli(u).Format("2006-01-02 15:04:05")
+	fmt.Printf("日期: %s\n", date)
+}
+
 func TestConversationBusiness_Create(t *testing.T) {
 	initClient()
 	b := ConversationBusiness{

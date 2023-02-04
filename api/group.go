@@ -162,8 +162,8 @@ func (s *GroupServer) Members(ctx context.Context, request *proto.SearchGroupMem
 	b := business.GroupMemberBusiness{
 		GroupID: &request.GroupId,
 	}
-	models := b.Members()
-	if models == nil {
+	models, total := b.Members()
+	if total == 0 {
 		return res, nil
 	}
 

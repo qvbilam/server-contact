@@ -1,10 +1,13 @@
 package business
 
 import (
+	"contact/enum"
 	"contact/global"
+	"contact/utils"
 	"encoding/json"
 	"fmt"
 	"go.uber.org/zap"
+	"time"
 )
 
 func CreateExchange(exchangeName string) {
@@ -100,4 +103,42 @@ func Dispatch(data []byte) {
 	}
 	// {SenderId:2 TargetId:1 Type:private C:{Code:0 Type:TextMsg Content:干什么呢}}
 	fmt.Printf("%+v\n", m)
+	allowType := []interface{}{enum.MsgTypeTxt, enum.MsgTypeImg, enum.MsgTypeGif, enum.MsgTypeLBS, enum.MsgTypeVoice, enum.MsgTypeVideo}
+	if utils.InArray(m.C.Type, allowType) == false {
+		return
+	}
+
+	var message string
+	var tips *string
+	switch m.C.Type {
+	case enum.MsgTypeTxt:
+		message = m.C.Content
+	case enum.MsgTypeImg:
+		message = "[表情]"
+	case enum.MsgTypeGif:
+		message = "[表情]"
+	case enum.MsgTypeLBS:
+		message = "[位置]"
+	case enum.MsgTypeVoice:
+		message = "[语音]"
+	case enum.MsgTypeVideo:
+		message = "[视频]"
+	}
+
+	b := ConversationBusiness{
+		SenderID:        m.SenderId,
+		UserID:          m.SenderId,
+		ObjectType:      m.Type,
+		ObjectID:        m.TargetId,
+		LastMessage:     message,
+		LastMessageType: m.C.Type,
+		LastMessageTime: time.Now().UnixMilli(),
+	}
+	if tips != nil {
+		b.Tips = tips
+	}
+
+	if err := b.Create(); err != nil {
+		zap.S().Errorf("发送消息自动创建联系人失败")
+	}
 }

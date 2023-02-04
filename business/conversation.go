@@ -6,6 +6,7 @@ import (
 	"contact/enum"
 	"contact/global"
 	"contact/model"
+	"contact/utils"
 	"context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -17,14 +18,31 @@ import (
 type ConversationBusiness struct {
 	ID              int64
 	UserID          int64
+	SenderID        int64
 	ObjectType      string
 	ObjectID        int64
 	NewsCount       int64
 	Tips            *string
 	LastMessage     string
+	LastMessageType string
 	LastMessageTime int64
 }
 
+// 已读
+func (b *ConversationBusiness) Read() error {
+	global.DB.Model(&model.Conversation{}).Where(&model.Conversation{
+		UserID:     b.UserID,
+		ObjectID:   b.ObjectID,
+		ObjectType: b.ObjectType,
+	}).Updates(map[string]interface{}{
+		"news_count": 0,
+		"tips":       "",
+	})
+
+	return nil
+}
+
+// NewCount 新消息数量
 func (b *ConversationBusiness) NewCount() int64 {
 	// 获取用户未开启免打扰的群
 	var groupMembers []model.GroupMember
@@ -38,7 +56,8 @@ func (b *ConversationBusiness) NewCount() int64 {
 	var res struct {
 		Count int64
 	}
-	if res := global.DB.Where(&model.Conversation{ObjectType: enum.ObjectTypeUser}).
+	if res := global.DB.Model(&model.Conversation{}).
+		Where(&model.Conversation{ObjectType: enum.ObjectTypeUser}).
 		Or("object_type = ? and object_id in ?", enum.ObjectTypeGroup, groupIds).
 		Select("sum(`news_count`) as count").First(&res); res.RowsAffected == 0 {
 		return res.RowsAffected
@@ -115,56 +134,35 @@ func (b *ConversationBusiness) List() (int64, []*model.Conversation) {
 	return res.RowsAffected, conversations
 }
 
+// Create 创建/更新联系人
 func (b *ConversationBusiness) Create() error {
-	var entity model.Conversation
 	tx := global.DB.Begin()
 
-	res := tx.Where(&model.Conversation{
-		UserID:     b.UserID,
-		ObjectType: b.ObjectType,
-		ObjectID:   b.ObjectID,
-	}).Clauses(clause.Locking{Strength: "UPDATE"}).First(&entity)
-
 	// 时间戳转 time.Time
-	t := time.UnixMicro(b.LastMessageTime)
-
-	newCount := 0
-	if entity.LastMessage != "" {
-		newCount = 1
+	if b.LastMessageTime == 0 {
+		b.LastMessageTime = time.Now().UnixMilli()
 	}
+	//t := time.UnixMicro(b.LastMessageTime)
 
-	if res.RowsAffected == 0 {
-		entity.UserID = b.UserID
-		entity.ObjectType = b.ObjectType
-		entity.ObjectID = b.ObjectID
-		entity.NewsCount = int64(newCount)
-		if b.Tips != nil {
-			entity.Tips = *b.Tips
-		}
-		entity.LastMessage = b.LastMessage
-		entity.LastMessageAt = &t
-		res = tx.Create(&entity)
+	var createRes bool
+	if b.ObjectType == enum.ObjectTypeGroup {
+		createRes = b.createGroup(tx)
+	} else if b.ObjectType == enum.ObjectTypeUser {
+		createRes = b.createUser(tx)
 	} else {
-		updates := map[string]interface{}{
-			"news_count":      gorm.Expr("news_count + ?", newCount),
-			"last_message":    b.LastMessage,
-			"last_message_at": &t,
-		}
-		if b.Tips != nil {
-			updates["tips"] = *b.Tips
-		}
-
-		res = tx.Model(&model.Conversation{}).Where(&model.Conversation{IDModel: model.IDModel{ID: entity.ID}}).Updates(updates)
-	}
-	if res.RowsAffected == 0 || res.Error != nil {
 		tx.Rollback()
-		return status.Errorf(codes.Internal, res.Error.Error())
+		return status.Errorf(codes.Internal, "不支持的会话对象类型: %s", b.ObjectType)
+	}
+	if createRes == false {
+		tx.Rollback()
+		return status.Errorf(codes.Internal, "创建会话失败")
 	}
 
 	tx.Commit()
 	return nil
 }
 
+// Delete 删除会话
 func (b *ConversationBusiness) Delete() error {
 	tx := global.DB.Begin()
 	res := tx.Where(&model.Conversation{UserID: b.UserID}).Delete(&model.Conversation{IDModel: model.IDModel{ID: b.ID}}, b.ID)
@@ -174,4 +172,170 @@ func (b *ConversationBusiness) Delete() error {
 	}
 	tx.Commit()
 	return nil
+}
+
+// 创建群聊会话
+func (b *ConversationBusiness) createGroup(tx *gorm.DB) bool {
+	var insertUserIds []int64
+	var updateUserIds []int64
+	var insertData []model.Conversation
+	var conversationUsers []model.Conversation
+	var conversationUserIds []int
+
+	unix := time.UnixMilli(b.LastMessageTime)
+
+	// 获取有当前群会话的所有用户
+	tx.Model(&model.Conversation{}).Clauses(clause.Locking{Strength: "UPDATE"}).Where(&model.Conversation{
+		ObjectID:   b.ObjectID,
+		ObjectType: enum.ObjectTypeGroup,
+	}).Order("user_id asc").Select("user_id").Find(&conversationUsers)
+
+	for _, c := range conversationUsers {
+		conversationUserIds = append(conversationUserIds, int(c.UserID))
+	}
+
+	// 获取群组所有用户
+	gmb := GroupMemberBusiness{GroupID: &b.ObjectID}
+	members, total := gmb.Members()
+	if total == 0 {
+		return false
+	}
+
+	for _, member := range members {
+		if utils.BinarySearch(conversationUserIds, int(member.UserID)) == -1 {
+			insertUserIds = append(insertUserIds, member.UserID)
+		} else {
+			updateUserIds = append(updateUserIds, member.UserID)
+		}
+	}
+
+	ic := model.Conversation{
+		SenderID:        b.SenderID,
+		ObjectID:        b.ObjectID,
+		ObjectType:      b.ObjectType,
+		NewsCount:       1,
+		LastMessage:     b.LastMessage,
+		LastMessageType: b.LastMessageType,
+		LastMessageAt:   &unix,
+	}
+
+	updateData := map[string]interface{}{
+		"sender_id":         b.SenderID,
+		"news_count":        gorm.Expr("news_count + ?", 1),
+		"last_message":      b.LastMessage,
+		"last_message_type": b.LastMessageType,
+		"last_message_at":   &unix,
+	}
+
+	if b.Tips != nil {
+		ic.Tips = *b.Tips
+		updateData["tips"] = *b.Tips
+	}
+
+	for _, uId := range insertUserIds {
+		i := ic
+		i.UserID = uId
+		insertData = append(insertData, i)
+	}
+
+	// 更新
+	if len(updateUserIds) > 0 {
+		if res := tx.Model(&model.Conversation{}).Where(&model.Conversation{
+			ObjectID:   b.ObjectID,
+			ObjectType: enum.ObjectTypeGroup,
+		}).Where("user_id in ?", updateUserIds).Updates(updateData); res.RowsAffected == 0 {
+			return false
+		}
+	}
+
+	// 创建
+	if len(insertData) > 0 {
+		if res := tx.CreateInBatches(insertData, 1000); res.RowsAffected == 0 {
+			return false
+		}
+	}
+
+	return true
+}
+
+// 创建私聊会话
+func (b *ConversationBusiness) createUser(tx *gorm.DB) bool {
+	// A 对话 B， A 打开对话框自动创建会话， 所以只需要 更新AB, 增加 BA 的会话框
+	var entity model.Conversation
+	var senderEntity model.Conversation
+
+	res := tx.Where(&model.Conversation{
+		UserID:     b.ObjectID,
+		ObjectType: b.ObjectType,
+		ObjectID:   b.SenderID,
+	}).Clauses(clause.Locking{Strength: "UPDATE"}).First(&entity)
+	unix := time.UnixMilli(b.LastMessageTime)
+
+	// 创建/修改 接受人会话
+	if res.RowsAffected == 0 {
+		entity.UserID = b.ObjectID
+		entity.ObjectType = b.ObjectType
+		entity.ObjectID = b.SenderID
+		entity.NewsCount = 1
+		entity.SenderID = b.SenderID
+		if b.Tips != nil {
+			entity.Tips = *b.Tips
+		}
+		entity.LastMessage = b.LastMessage
+		entity.LastMessageType = b.LastMessageType
+		entity.LastMessageAt = &unix
+		res = tx.Create(&entity)
+	} else {
+		updates := map[string]interface{}{
+			"news_count":        gorm.Expr("news_count + ?", 1),
+			"sender_id":         b.SenderID,
+			"last_message":      b.LastMessage,
+			"last_message_type": b.LastMessageType,
+			"last_message_at":   &unix,
+		}
+		if b.Tips != nil {
+			updates["tips"] = *b.Tips
+		}
+
+		res = tx.Model(&model.Conversation{}).Where(&model.Conversation{IDModel: model.IDModel{ID: entity.ID}}).Updates(updates)
+	}
+
+	if res.RowsAffected == 0 {
+		return false
+	}
+
+	// 修改发送人会话
+	res = tx.Where(&model.Conversation{
+		UserID:     b.SenderID,
+		ObjectType: b.ObjectType,
+		ObjectID:   b.ObjectID,
+	}).Clauses(clause.Locking{Strength: "UPDATE"}).First(&senderEntity)
+
+	// 创建/修改 发送者会话
+	if res.RowsAffected == 0 {
+		senderEntity.UserID = b.SenderID
+		senderEntity.ObjectType = b.ObjectType
+		senderEntity.ObjectID = b.ObjectID
+		senderEntity.SenderID = b.SenderID
+		senderEntity.LastMessage = b.LastMessage
+		senderEntity.LastMessageType = b.LastMessageType
+		senderEntity.LastMessageAt = &unix
+		res = tx.Create(&senderEntity)
+	} else {
+		updates := map[string]interface{}{
+			"sender_id":         b.SenderID,
+			"last_message":      b.LastMessage,
+			"last_message_type": b.LastMessageType,
+			"last_message_at":   &unix,
+		}
+
+		res = tx.Model(&model.Conversation{}).Where(&model.Conversation{IDModel: model.IDModel{ID: senderEntity.ID}}).Updates(updates)
+	}
+
+	if res.RowsAffected == 0 {
+		return false
+	}
+
+	return true
+
 }
