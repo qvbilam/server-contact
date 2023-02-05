@@ -147,7 +147,7 @@ func (b *ConversationBusiness) Create() error {
 	var createRes bool
 	if b.ObjectType == enum.ObjectTypeGroup {
 		createRes = b.createGroup(tx)
-	} else if b.ObjectType == enum.ObjectTypeUser {
+	} else if b.ObjectType == enum.ObjectTypeUser || b.ObjectType == enum.ObjectTypePrivate {
 		createRes = b.createUser(tx)
 	} else {
 		tx.Rollback()
@@ -266,7 +266,7 @@ func (b *ConversationBusiness) createUser(tx *gorm.DB) bool {
 
 	res := tx.Where(&model.Conversation{
 		UserID:     b.ObjectID,
-		ObjectType: b.ObjectType,
+		ObjectType: enum.ObjectTypeUser,
 		ObjectID:   b.SenderID,
 	}).Clauses(clause.Locking{Strength: "UPDATE"}).First(&entity)
 	unix := time.UnixMilli(b.LastMessageTime)
@@ -274,7 +274,7 @@ func (b *ConversationBusiness) createUser(tx *gorm.DB) bool {
 	// 创建/修改 接受人会话
 	if res.RowsAffected == 0 {
 		entity.UserID = b.ObjectID
-		entity.ObjectType = b.ObjectType
+		entity.ObjectType = enum.ObjectTypeUser
 		entity.ObjectID = b.SenderID
 		entity.NewsCount = 1
 		entity.SenderID = b.SenderID
@@ -307,14 +307,14 @@ func (b *ConversationBusiness) createUser(tx *gorm.DB) bool {
 	// 修改发送人会话
 	res = tx.Where(&model.Conversation{
 		UserID:     b.SenderID,
-		ObjectType: b.ObjectType,
+		ObjectType: enum.ObjectTypeUser,
 		ObjectID:   b.ObjectID,
 	}).Clauses(clause.Locking{Strength: "UPDATE"}).First(&senderEntity)
 
 	// 创建/修改 发送者会话
 	if res.RowsAffected == 0 {
 		senderEntity.UserID = b.SenderID
-		senderEntity.ObjectType = b.ObjectType
+		senderEntity.ObjectType = enum.ObjectTypeUser
 		senderEntity.ObjectID = b.ObjectID
 		senderEntity.SenderID = b.SenderID
 		senderEntity.LastMessage = b.LastMessage
