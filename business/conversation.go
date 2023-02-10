@@ -70,6 +70,7 @@ func (b *ConversationBusiness) List() (int64, []*model.Conversation) {
 	var conversations []*model.Conversation
 	res := global.DB.
 		Where(&model.Conversation{UserID: b.UserID}).
+		Order("last_message_at desc").
 		Find(&conversations)
 	if res.RowsAffected == 0 || res.Error != nil {
 		return 0, nil
