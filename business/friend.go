@@ -9,10 +9,12 @@ import (
 )
 
 type FriendBusiness struct {
-	ID           int64
-	UserID       int64
-	FriendUserID int64
-	Remark       *string
+	ID            int64
+	UserID        int64
+	FriendUserID  int64
+	FriendUserIds []int64
+	Remark        *string
+	Keyword       string
 }
 
 func (b *FriendBusiness) IsFriend() bool {
@@ -32,7 +34,15 @@ func (b *FriendBusiness) IsFriend() bool {
 func (b *FriendBusiness) Users() (int64, []model.Friend) {
 	var users []model.Friend
 	tx := global.DB
-	res := tx.Where(&model.Friend{UserID: b.UserID}).Find(&users)
+	tx = tx.Where(&model.Friend{UserID: b.UserID})
+	if b.FriendUserIds != nil {
+		tx = tx.Where("friend_user_id in ?", b.FriendUserIds)
+	}
+	if b.Keyword != "" {
+		// todo 查用户 code, 昵称, 备注
+	}
+
+	res := tx.Find(&users)
 	if res.RowsAffected == 0 {
 		return 0, nil
 	}

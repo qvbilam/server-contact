@@ -88,7 +88,11 @@ func (s *FriendServer) GetApply(ctx context.Context, request *proto.UpdateFriend
 }
 
 func (s *FriendServer) Get(ctx context.Context, request *proto.SearchFriendRequest) (*proto.FriendsResponse, error) {
-	b := business.FriendBusiness{UserID: request.UserId}
+	b := business.FriendBusiness{
+		UserID:        request.UserId,
+		FriendUserIds: request.FriendIds,
+		Keyword:       request.Keyword,
+	}
 	total, friends := b.Users()
 
 	res := &proto.FriendsResponse{}

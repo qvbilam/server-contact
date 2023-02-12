@@ -25,6 +25,8 @@ message UpdateFriendRequest {
 
 message SearchFriendRequest{
   int64 userId = 1;
+  repeated int64 friendIds = 2;
+  string keyword =3;
 }
 
 message UpdateFriendApplyRequest {
@@ -48,6 +50,7 @@ message FriendAppliesResponse {
   int64 total = 1;
   repeated FriendApplyResponse users = 2;
 }
+
 
 service friend {
   rpc Get(SearchFriendRequest) returns (FriendsResponse);
