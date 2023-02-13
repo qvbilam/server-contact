@@ -62,3 +62,13 @@ func (s *ConversationServer) Delete(ctx context.Context, request *proto.UpdateCo
 	_ = b.Delete()
 	return &emptypb.Empty{}, nil
 }
+
+func (s *ConversationServer) Read(ctx context.Context, request *proto.UpdateConversationRequest) (*emptypb.Empty, error) {
+	b := business.ConversationBusiness{
+		UserID:     request.UserId,
+		ObjectType: request.ObjectType,
+		ObjectID:   request.ObjectId,
+	}
+	_ = b.Read()
+	return &emptypb.Empty{}, nil
+}
