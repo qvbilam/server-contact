@@ -1,5 +1,5 @@
 package enum
 
-const FriendApplyStatusReject = 0
+const FriendApplyStatusReject = -1
 const FriendApplyStatusWait = 0
 const FriendApplyStatusAgree = 1
