@@ -18,7 +18,7 @@ func (s *ConversationServer) Get(ctx context.Context, request *proto.GetConversa
 
 	var cs []*proto.ConversationResponse
 	for _, c := range conversations {
-		var obj *proto.ObjectResponse
+		obj := &proto.ObjectResponse{}
 		if c.Object != nil {
 			obj.Id = c.Object.ID
 			obj.Name = c.Object.Name
