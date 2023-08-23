@@ -18,18 +18,20 @@ func (s *ConversationServer) Get(ctx context.Context, request *proto.GetConversa
 
 	var cs []*proto.ConversationResponse
 	for _, c := range conversations {
+		var obj *proto.ObjectResponse
+		if c.Object != nil {
+			obj.Id = c.Object.ID
+			obj.Name = c.Object.Name
+			obj.Avatar = c.Object.Avatar
+			obj.Remark = c.Object.Remark
+			obj.IsDND = c.Object.IsDND
+		}
 		cs = append(cs, &proto.ConversationResponse{
-			Id:         c.ID,
-			UserId:     c.UserID,
-			ObjectType: c.ObjectType,
-			ObjectId:   c.ObjectID,
-			Object: &proto.ObjectResponse{
-				Id:     c.Object.ID,
-				Name:   c.Object.Name,
-				Avatar: c.Object.Avatar,
-				Remark: c.Object.Remark,
-				IsDND:  c.Object.IsDND,
-			},
+			Id:              c.ID,
+			UserId:          c.UserID,
+			ObjectType:      c.ObjectType,
+			ObjectId:        c.ObjectID,
+			Object:          obj,
 			NewsCount:       c.NewsCount,
 			Tips:            c.Tips,
 			LastMessage:     c.LastMessage,
