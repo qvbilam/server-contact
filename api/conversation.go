@@ -72,5 +72,6 @@ func (s *ConversationServer) Read(ctx context.Context, request *proto.UpdateConv
 		ObjectID:   request.ObjectId,
 	}
 	_ = b.Read()
+
 	return &emptypb.Empty{}, nil
 }

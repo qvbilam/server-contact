@@ -31,8 +31,9 @@ type ConversationBusiness struct {
 // 已读
 func (b *ConversationBusiness) Read() error {
 	global.DB.Model(&model.Conversation{}).Where(&model.Conversation{
-		IDModel: model.IDModel{ID: b.ID},
-		UserID:  b.UserID,
+		UserID:     b.UserID,
+		ObjectType: b.ObjectType,
+		ObjectID:   b.ObjectID,
 	}).Updates(map[string]interface{}{
 		"news_count": 0,
 		"tips":       "",
