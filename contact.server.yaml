@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: contact-server
+spec:
+  selector:
+    app: contact-server
+  ports:
+    - name: grpc-contact-server
+      protocol: TCP
+      port: 9805
+      targetPort: 9501
+  type: NodePort

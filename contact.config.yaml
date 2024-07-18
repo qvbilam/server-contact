@@ -1,0 +1,17 @@
+apiVersion: "v1"
+kind: ConfigMap
+metadata:
+  name: contact
+  labels:
+    app: contact
+data:
+  # 服务配置
+  server_name: "contact-server"
+  # 消息服务
+  message_server_name: "message-server"
+  message_server_host: "message-server"
+  message_server_port: "9804"
+  # 用户服务
+  user_server_name: "user-server"
+  user_server_host: "user-server"
+  user_server_port: "9801"

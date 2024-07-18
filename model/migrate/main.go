@@ -22,7 +22,9 @@ func main() {
 		NamingStrategy: schema.NamingStrategy{
 			SingularTable: true, //不带表名
 		},
+		DisableForeignKeyConstraintWhenMigrating: true, // 禁用外键关联
 	})
+
 	if err != nil {
 		panic(any(err))
 	}
@@ -33,4 +35,5 @@ func main() {
 		&model.GroupMember{},
 		&model.Conversation{}, // 创建这个表需要现将 object 注释,防止创建object表
 	)
+
 }

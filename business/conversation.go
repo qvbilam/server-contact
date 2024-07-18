@@ -1,6 +1,5 @@
 package business
 
-import "C"
 import (
 	userProto "contact/api/qvbilam/user/v1"
 	"contact/enum"
