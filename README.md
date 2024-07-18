@@ -1,7 +1,7 @@
 # 通过k8s启动
 
 ## 1. 初始数据
-修改数据库配置, 执行文件`model.migrate.main.go`
+修改数据库配置, 执行文件`model.migrate.main.go
 ```shell
 $ cp config.yaml.tmp config.yaml`
 ```
