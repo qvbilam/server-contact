@@ -18,7 +18,7 @@ spec:
         version: v1.0
     spec:
       containers:
-        - name: user-server
+        - name: contact-server
           image: registry.cn-hangzhou.aliyuncs.com/qvbilam/api-server-contact:1.0
           # 不存在拉取
           # imagePullPolicy: IfNotPresent
