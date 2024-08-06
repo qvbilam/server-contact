@@ -3,7 +3,7 @@
 ## 1. 初始数据
 修改数据库配置, 执行文件`model.migrate.main.go
 ```shell
-$ cp config.yaml.tmp config.yaml`
+$ cp config.yaml.tmp config.yaml
 ```
 
 ## 2. 创建私钥
@@ -28,7 +28,7 @@ Please input server version
 1. 修改`deployment.yaml`中的`image镜像地址`和`imagePullSecrets.name`第一步设置私有仓库的密钥名称
 2. 修改隐私配置`secret.yaml`
 ```shell
-$ cp [app].secret.yaml.tmp [app].secret.yaml`
+$ cp [app].secret.yaml.tmp [app].secret.yaml
 ```
 
 ## 5. 申请服务
